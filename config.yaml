@@ -1,0 +1,4 @@
+defaultFont: "Consolas"
+defaultFontSize: 16
+defaultColor: "darkgray"
+startupMessage: "Welcome to our editor!"
