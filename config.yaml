@@ -1,4 +1,12 @@
-defaultFont: "Consolas"
-defaultFontSize: 16
-defaultColor: "darkgray"
-startupMessage: "Welcome to our editor!"
+ui:
+  fontFamily: "Consolas"
+  fontSize: 14
+  defaultColor: "darkgray"
+  startupMessage: "Welcome to our editor!"
+  theme: "light"  
+  wrapText: true
+
+app:
+  defaultDirectory: "C:/Users/Public/Documents"
+  showTimeAndDate: true
+  printDialog: true
