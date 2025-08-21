@@ -1,75 +1,98 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
+﻿<project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.texteditor</groupId>
+    <artifactId>text-editor</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
-  <groupId>com.texteditor</groupId>
-  <artifactId>text-editor</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>text-editor</name>
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>17</maven.compiler.release>
-  </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.2</version>
+        </dependency>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.10.2</version>
-      <scope>test</scope>
-    </dependency>
+        <!-- PDF export -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.30</version>
+        </dependency>
 
-    <dependency>
-      <groupId>com.fifesoft</groupId>
-      <artifactId>rsyntaxtextarea</artifactId>
-      <version>3.3.4</version>
-    </dependency>
+        <!-- ODT support -->
+        <dependency>
+            <groupId>org.odftoolkit</groupId>
+            <artifactId>simple-odf</artifactId>
+            <version>0.9.0</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.odftoolkit</groupId>
-      <artifactId>odfdom-java</artifactId>
-      <version>0.9.0</version>
-    </dependency>
+        <!-- Syntax highlighting -->
+        <dependency>
+            <groupId>com.fifesoft</groupId>
+            <artifactId>rsyntaxtextarea</artifactId>
+            <version>3.6.0</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.apache.pdfbox</groupId>
-      <artifactId>pdfbox</artifactId>
-      <version>2.0.30</version>
-    </dependency>
-  </dependencies>
+        <!-- Tests (optional) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-        <configuration>
-          <release>${maven.compiler.release}</release>
-        </configuration>
-      </plugin>
+    <build>
+        <plugins>
+            <!-- PMD -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.21.2</version>
+                <configuration>
+                    <printFailingErrors>true</printFailingErrors>
+                    <linkXRef>false</linkXRef>
+                    <targetJdk>21</targetJdk>
+                    <rulesets>
+                        <ruleset>category/java/bestpractices.xml</ruleset>
+                        <ruleset>category/java/codestyle.xml</ruleset>
+                    </rulesets>
+                    <outputDirectory>${project.basedir}/reports/pmd</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals><goal>pmd</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.1.0</version>
-        <configuration>
-          <mainClass>com.texteditor.App</mainClass>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
-        <configuration>
-          <useModulePath>false</useModulePath>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+            <!-- Fat JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.texteditor.App</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>text-editor</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
-
