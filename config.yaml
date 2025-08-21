@@ -3,7 +3,7 @@ ui:
   fontSize: 14
   defaultColor: "darkgray"
   startupMessage: "Welcome to our editor!"
-  theme: "light"  
+  theme: "light"
   wrapText: true
 
 app:
