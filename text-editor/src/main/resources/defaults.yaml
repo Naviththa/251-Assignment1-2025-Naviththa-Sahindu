@@ -1,0 +1,5 @@
+﻿ui:
+  fontFamily: "Consolas"
+  fontSize: 14
+  theme: "light"
+  wrapText: true
