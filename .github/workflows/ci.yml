@@ -7,20 +7,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ github.workspace }}   # ALWAYS the repo root
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show workspace (debug)
+      - name: Debug workspace (prove we're in repo root)
         run: |
           echo "PWD:"; pwd
-          echo "Contents:"; ls -la
-          echo "pom.xml present?"; test -f pom.xml && echo "YES" || (echo "NO"; exit 1)
+          echo "List:"; ls -la
+          test -f pom.xml && echo "pom.xml found" || (echo "pom.xml NOT found"; exit 1)
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -29,13 +24,14 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
+      # DO NOT set working-directory here
       - name: Build (package)
         run: mvn -U -B -q -DskipTests package
 
       - name: PMD (code quality)
         run: mvn -B -q pmd:pmd
 
-      # Optional metrics – won't fail if not implemented
+      # Optional metrics; never fail the job if missing
       - name: Metrics (optional)
         continue-on-error: true
         run: |
@@ -51,3 +47,4 @@ jobs:
             target/*.jar
             target/pmd.xml
             target/site/pmd.html
+
