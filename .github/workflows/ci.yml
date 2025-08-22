@@ -7,9 +7,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}   # ALWAYS the repo root
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Show workspace (debug)
+        run: |
+          echo "PWD:"; pwd
+          echo "Contents:"; ls -la
+          echo "pom.xml present?"; test -f pom.xml && echo "YES" || (echo "NO"; exit 1)
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -18,21 +29,20 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      # IMPORTANT: run from repo root (no working-directory: text-editor)
       - name: Build (package)
-        run: mvn -B -q -DskipTests package
+        run: mvn -U -B -q -DskipTests package
 
       - name: PMD (code quality)
         run: mvn -B -q pmd:pmd
 
-      # Optional metrics step; won’t fail the job if missing
-      - name: Metrics (CK) [optional]
+      # Optional metrics – won't fail if not implemented
+      - name: Metrics (optional)
         continue-on-error: true
         run: |
           mvn -q -DskipTests exec:java -Dexec.mainClass="com.texteditor.tools.MetricsRunner" \
           || echo "MetricsRunner not implemented; skipping."
 
-      - name: Upload artifacts (JAR + reports)
+      - name: Upload artifacts (JAR + PMD reports)
         if: always()
         uses: actions/upload-artifact@v4
         with:
