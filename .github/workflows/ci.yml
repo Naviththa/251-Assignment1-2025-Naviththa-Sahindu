@@ -11,10 +11,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug workspace (prove we're in repo root)
+      - name: Debug workspace (prove repo root)
         run: |
-          echo "PWD:"; pwd
-          echo "List:"; ls -la
+          echo "PWD:" && pwd
+          echo "List:" && ls -la
           test -f pom.xml && echo "pom.xml found" || (echo "pom.xml NOT found"; exit 1)
 
       - name: Set up JDK 21
@@ -24,14 +24,12 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      # DO NOT set working-directory here
       - name: Build (package)
         run: mvn -U -B -q -DskipTests package
 
       - name: PMD (code quality)
         run: mvn -B -q pmd:pmd
 
-      # Optional metrics; never fail the job if missing
       - name: Metrics (optional)
         continue-on-error: true
         run: |
@@ -47,4 +45,3 @@ jobs:
             target/*.jar
             target/pmd.xml
             target/site/pmd.html
-
