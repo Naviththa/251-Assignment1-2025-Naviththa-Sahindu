@@ -4,3 +4,5 @@
 .DS_Store
 .idea/
 *.iml
+docker build -t text-editor:latest .
+docker run --rm text-editor:latest
