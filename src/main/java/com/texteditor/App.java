@@ -36,7 +36,6 @@ public class App extends JFrame {
     private final RSyntaxTextArea editor = new RSyntaxTextArea(30, 100);
     private File currentFile = null;
     private String lastFind = null;
-    private int lastFindPos = 0;
 
     public App() {
         setTitle("251 Text Editor");
@@ -64,26 +63,14 @@ public class App extends JFrame {
 
         // File
         JMenu mFile = new JMenu("File");
-        mFile.add(new JMenuItem(new AbstractAction("New") {
-            public void actionPerformed(ActionEvent e) { doNew(); }
-        }));
-        mFile.add(new JMenuItem(new AbstractAction("Open (.txt/.rtf/.odt)") {
-            public void actionPerformed(ActionEvent e) { doOpen(); }
-        }));
-        mFile.add(new JMenuItem(new AbstractAction("Save (.txt)") {
-            public void actionPerformed(ActionEvent e) { doSave(); }
-        }));
+        mFile.add(menuItem("New", e -> doNew()));
+        mFile.add(menuItem("Open (.txt/.rtf/.odt)", e -> doOpen()));
+        mFile.add(menuItem("Save (.txt)", e -> doSave()));
         mFile.addSeparator();
-        mFile.add(new JMenuItem(new AbstractAction("Print") {
-            public void actionPerformed(ActionEvent e) { doPrint(); }
-        }));
-        mFile.add(new JMenuItem(new AbstractAction("Export PDF") {
-            public void actionPerformed(ActionEvent e) { doExportPdf(); }
-        }));
+        mFile.add(menuItem("Print", e -> doPrint()));
+        mFile.add(menuItem("Export PDF", e -> doExportPdf()));
         mFile.addSeparator();
-        mFile.add(new JMenuItem(new AbstractAction("Exit") {
-            public void actionPerformed(ActionEvent e) { dispose(); }
-        }));
+        mFile.add(menuItem("Exit", e -> dispose()));
         bar.add(mFile);
 
         // Edit
@@ -91,41 +78,39 @@ public class App extends JFrame {
         mEdit.add(new JMenuItem(new DefaultEditorKit.CopyAction() {{ putValue(NAME,"Copy"); }}));
         mEdit.add(new JMenuItem(new DefaultEditorKit.PasteAction(){{ putValue(NAME,"Paste"); }}));
         mEdit.add(new JMenuItem(new DefaultEditorKit.CutAction()  {{ putValue(NAME,"Cut"); }}));
-        mEdit.add(new JMenuItem(new AbstractAction("Clear") {
-            public void actionPerformed(ActionEvent e) { editor.setText(""); }
-        }));
+        mEdit.add(menuItem("Clear", e -> editor.setText("")));
         mEdit.addSeparator();
-        mEdit.add(new JMenuItem(new AbstractAction("Time & Date") {
-            public void actionPerformed(ActionEvent e) { insertTimeDate(); }
-        }));
+        mEdit.add(menuItem("Time & Date", e -> insertTimeDate()));
         bar.add(mEdit);
 
         // Search
         JMenu mSearch = new JMenu("Search");
-        mSearch.add(new JMenuItem(new AbstractAction("Find...") {
-            public void actionPerformed(ActionEvent e) { doFind(); }
-        }));
-        mSearch.add(new JMenuItem(new AbstractAction("Find Next") {
-            public void actionPerformed(ActionEvent e) { doFindNext(); }
-        }));
+        mSearch.add(menuItem("Find...", e -> doFind()));
+        mSearch.add(menuItem("Find Next", e -> doFindNext()));
         bar.add(mSearch);
 
         // Help
         JMenu mHelp = new JMenu("Help");
-        mHelp.add(new JMenuItem(new AbstractAction("About") {
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(App.this,
-                        "Text Editor for 251 Assignment\nAuthors: Naviththa (25013309), Sahindu (25015527)",
-                        "About", JOptionPane.INFORMATION_MESSAGE);
-            }
-        }));
+        mHelp.add(menuItem("About", e -> JOptionPane.showMessageDialog(
+                this, "Text Editor for 251 Assignment\nAuthors: Naviththa (25013309), Sahindu (25015527)",
+                "About", JOptionPane.INFORMATION_MESSAGE)));
         bar.add(mHelp);
 
         return bar;
     }
 
+    private JMenuItem menuItem(String name, java.awt.event.ActionListener action) {
+        JMenuItem it = new JMenuItem(name);
+        it.addActionListener(action);
+        return it;
+    }
+
     // === File actions ===
-    private void doNew() { editor.setText(""); currentFile = null; setTitle("251 Text Editor"); }
+    private void doNew() {
+        editor.setText("");
+        currentFile = null;
+        setTitle("251 Text Editor");
+    }
 
     private void doOpen() {
         JFileChooser fc = new JFileChooser();
@@ -138,7 +123,7 @@ public class App extends JFrame {
                 if (name.endsWith(".rtf")) {
                     text = loadRtf(f);
                 } else if (name.endsWith(".odt")) {
-                    text = loadWithTika(f); // ODT (and others) via Apache Tika
+                    text = loadWithTika(f); // robust for ODT and more
                 } else {
                     text = Files.readString(f.toPath(), StandardCharsets.UTF_8);
                 }
@@ -147,9 +132,7 @@ public class App extends JFrame {
                 currentFile = f;
                 setTitle("251 Text Editor — " + f.getName());
                 applySyntaxForFilename(name);
-            } catch (Exception ex) {
-                showErr(ex);
-            }
+            } catch (Exception ex) { showErr(ex); }
         }
     }
 
@@ -167,8 +150,7 @@ public class App extends JFrame {
     }
 
     private void doPrint() {
-        try { editor.print(); }
-        catch (Exception ex) { showErr(ex); }
+        try { editor.print(); } catch (Exception ex) { showErr(ex); }
     }
 
     private void doExportPdf() {
@@ -188,19 +170,17 @@ public class App extends JFrame {
         String input = JOptionPane.showInputDialog(this, "Find:");
         if (input == null || input.isEmpty()) return;
         lastFind = input;
-        lastFindPos = editor.getCaretPosition();
-        findFrom(lastFindPos);
+        findFrom(Math.max(0, editor.getCaretPosition()));
     }
 
     private void doFindNext() {
         if (lastFind == null || lastFind.isEmpty()) { doFind(); return; }
-        lastFindPos = editor.getCaretPosition();
-        findFrom(lastFindPos);
+        findFrom(Math.max(0, editor.getCaretPosition()));
     }
 
     private void findFrom(int start) {
         String hay = editor.getText();
-        int idx = hay.indexOf(lastFind, Math.max(0, start));
+        int idx = hay.indexOf(lastFind, start);
         if (idx >= 0) {
             editor.requestFocusInWindow();
             editor.select(idx, idx + lastFind.length());
@@ -235,10 +215,10 @@ public class App extends JFrame {
         return doc.getText(0, doc.getLength());
     }
 
-    /** ODT and many other formats via Apache Tika */
+    /** ODT (and many formats) using Apache Tika */
     private String loadWithTika(File f) throws Exception {
         AutoDetectParser parser = new AutoDetectParser();
-        BodyContentHandler handler = new BodyContentHandler(-1); // unlimited
+        BodyContentHandler handler = new BodyContentHandler(-1);
         Metadata metadata = new Metadata();
         ParseContext context = new ParseContext();
         try (InputStream stream = new FileInputStream(f)) {
